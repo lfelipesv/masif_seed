@@ -49,7 +49,7 @@ for ppi_pair_id in ppi_pair_list:
     my_precomp_dir = params['masif_precomputation_dir']+ppi_pair_id+'/'
     if not os.path.exists(my_precomp_dir):
         os.makedirs(my_precomp_dir)
-    
+
     # Read directly from the ply file.
     fields = ppi_pair_id.split('_')
     ply_file = {}

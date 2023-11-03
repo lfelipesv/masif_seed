@@ -170,8 +170,9 @@ def get_patch_coords(top_dir, pdb, pid, cv=None):
     else:
         patch_coords = np.load(os.path.join(
             top_dir, pdb, pid+'_list_indices.npy'), allow_pickle=True)[cv]
+    # patch_coords_np = patch_coords.copy()
     patch_coords = {key: patch_coords[ii] for ii, key in enumerate(cv)}
-    return patch_coords 
+    return patch_coords
 
 
 # Get the center of the interface based on the ground truth: find the most shape complementary patch. 
@@ -327,13 +328,14 @@ def match_descriptors(directory_list, pids, target_desc, params):
             true_iface = np.where(iface > params['iface_cutoff'])[0]
             near_points = np.where(diff < params['desc_dist_cutoff'])[0]
 
+
             selected = np.intersect1d(true_iface, near_points)
             if len(selected > 0):
                 all_matched_names.append([name]*len(selected))
                 all_matched_vix.append(selected)
                 all_matched_desc_dist.append(diff[selected])
-                #print('Matched {}'.format(ppi_pair_id))
-                #print('Scores: {} {}'.format(iface[selected], diff[selected]))
+                # print('Matched {}'.format(ppi_pair_id))
+                # print('Scores: {} {}'.format(iface[selected], diff[selected]))
             if count_proteins % 1000 == 0:
                 print('Compared target with {} \'fragments\' from {} proteins'.format(count_descriptors, count_proteins))
 
@@ -369,6 +371,7 @@ def count_clashes(transformation, source_surface_vertices, source_structure, \
     structure_ca_coord_pcd.transform(transformation)
     d_nn_ca, i_nn_ca = target_pcd_tree.query(np.asarray(structure_ca_coord_pcd.points),k=1,distance_upper_bound=radius)
     clashing_ca = np.sum(d_nn_ca<=radius)
+
     if clashing_ca > clashing_ca_thresh:
         return clashing_ca, 0.0
 
@@ -385,6 +388,7 @@ def count_clashes(transformation, source_surface_vertices, source_structure, \
     if clashing > clashing_thresh:
         return clashing_ca, clashing 
 
+    # Align only if threshold passes!!!
     # Transform the input structure. - This is a bit of a bad programming practice: shouldn't be a for loop..
     for ix, v in enumerate(structure_coord_pcd.points):
         structure_atoms[ix].set_coord(v)
@@ -406,6 +410,10 @@ def multidock(source_pcd, source_patch_coords, source_descs,
         source_patch, source_patch_descs, source_patch_idx = get_patch_geo(
             source_pcd, source_patch_coords, pt, source_descs, outward_shift=params['surface_outward_shift'])
            
+        # print(source_patch)
+        # print(source_patch_descs[0])
+        # print(target_pcd)
+        # print(target_descs[0])
         result = registration_ransac_based_on_feature_matching(
             source_patch, target_pcd, source_patch_descs[0], target_descs[0],
             ransac_radius,
@@ -446,9 +454,9 @@ def align_and_save(out_filename_base, patch, source_structure,
     io.set_structure(source_structure)
     io.save(out_filename_base+'.pdb')
     # Save patch - not necessary for benchmarking purposes. Uncomment if wanted.
-    #mesh = Simple_mesh(np.asarray(patch.points))
-    #mesh.set_attribute('vertex_charge', point_importance)
-    #mesh.save_mesh(out_filename_base+'_patch.ply')
+    mesh = Simple_mesh(np.asarray(patch.points))
+    mesh.set_attribute('vertex_charge', point_importance)
+    mesh.save_mesh(out_filename_base+'_patch.ply')
     
 
 # Compute different types of scores: 
@@ -522,26 +530,29 @@ def align_protein(name, \
     else: 
         chain = ppi_pair_id.split('_')[2]
         chain_number = 2
-        
+    
     # Load source ply file, coords, and descriptors.
     source_pcd, source_desc, source_iface = load_protein_pcd(ppi_pair_id, chain_number, source_paths, flipped_features=False, read_mesh=False)
     
     # Randomly rotate the source ply file, and store the random transformation matrix (for benchmark purposes only)
     random_transformation = get_center_and_random_rotate(source_pcd)
-    source_pcd.transform(random_transformation)
-    
+    source_pcd.transform(random_transformation)   
 
     # Get coordinates for all matched vertices.
     source_vix = matched_dict[name]
 
     source_coord =  get_patch_coords(params['seed_precomp_dir'], ppi_pair_id, pid, cv=source_vix)
-    
+
+    # print('Testing...')
+
     # Perform all alignments to target. 
     all_results, all_source_patch, all_source_patch_desc, all_source_idx = multidock(
             source_pcd, source_coord, source_desc,
             source_vix, target_patch, target_patch_descs, 
             params
             ) 
+
+    # print('Done with alignments')
 
     # Score the results using a 'lightweight' scoring function.
     all_source_scores = [None]*len(source_vix)
@@ -567,18 +578,27 @@ def align_protein(name, \
     scores = np.asarray(all_source_scores)
     
     # Filter anything below neural network score cutoff
+    # print('1')
+    # print(scores)
+    # print(scores[:,0])
+    # print scores in format with 2 decimals
+    # print(np.around(scores[:,0], decimals=2))
     top_scorers = np.where(scores[:,0] > params['nn_score_cutoff'])[0]
+    # print('2')
+    # print(top_scorers)
+    # print(len(top_scorers))
     
     if len(top_scorers) > 0:
         source_outdir = os.path.join(site_outdir, '{}'.format(ppi_pair_id))
         if not os.path.exists(source_outdir):
             os.makedirs(source_outdir)
 
+        # print('3')
         # Load source structure 
         source_struct = parser.get_structure('{}_{}'.format(pdb,chain), os.path.join(params['seed_pdb_dir'],'{}_{}.pdb'.format(pdb,chain)))
         # Use the preexisting random rotation matrix that was applied to the patch.
         random_rotate_source_struct(source_struct, random_transformation)
-
+        # print('4')
 
         # Perform the transformation on the atoms
         for j in top_scorers:
@@ -586,13 +606,20 @@ def align_protein(name, \
 
             source_structure_cp = copy.deepcopy(source_struct)
             
+            print('5')
             # Count clashes and if threshold passes, align the pdb.
             clashing_ca, clashing_total = count_clashes(res.transformation, np.asarray(all_source_patch[j].points), source_structure_cp, \
                 target_ca_pcd_tree, target_pcd_tree, clashing_ca_thresh=params['allowed_CA_clashes'], clashing_thresh=params['allowed_heavy_atom_clashes'])
 
+            print('6')
+            # print(clashing_ca)
+            # print('asd')
+            # print(clashing_total)
             # Check if the number of clashes exceeds the number allowed. 
             if clashing_ca <= params['allowed_CA_clashes'] and clashing_total <= params['allowed_heavy_atom_clashes']:
+            # if True:
 
+                # print('7')
                 # Align and save the pdb + patch 
                 out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)
                 align_and_save(out_fn, all_source_patch[j], source_structure_cp, \

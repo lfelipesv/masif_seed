@@ -36,6 +36,8 @@ if len(sys.argv) == 4:
     seed_list = open(sys.argv[3])
     seed_ppi_pair_ids  = [x.rstrip() for x in seed_list.readlines()]
 else:
+    print('path')
+    print(params['seed_desc_dir'])
     seed_ppi_pair_ids  = np.array(os.listdir(params['seed_desc_dir']))
 
 # Initialize two neural networks - one that does not account for atomic clashes (initial filter) and one with clashes. 
@@ -46,8 +48,8 @@ nn_score_atomic.restore_model()
 target_ply_fn = os.path.join(params['target_ply_iface_dir'], target_name+'.ply')
 mymesh = pymesh.load_mesh(target_ply_fn)
 iface = mymesh.get_attribute('vertex_iface')
-target_coord = get_patch_coords(params['target_precomp_dir'], target_ppi_pair_id, target_pid)
 
+target_coord = get_patch_coords(params['target_precomp_dir'], target_ppi_pair_id, target_pid)
 
 # Define target and source paths (for interface scores, descriptors, ply files)
 target_paths = {}
@@ -139,6 +141,11 @@ for site_ix, site_vix in zip(site_ixs,site_vixs):
     print("Second stage of MaSIF seed search: each matched descriptor is aligned and scored; this may take a while..")
     count_matched_fragments = 0 
     for ix, name in enumerate(matched_dict.keys()):
+        # if ix == 0:
+        #     print('jump')
+        # else:
+        #     print(ix)
+        # print(name)
         align_protein(name, \
                     target_patch, \
                     target_patch_descs, \
@@ -154,5 +161,3 @@ for site_ix, site_vix in zip(site_ixs,site_vixs):
         if (ix+1) %1000 == 0:
             print('So far, MaSIF ahs aligned {} fragments from {} proteins.'.format(count_matched_fragments,ix+1))
         count_matched_fragments+= len(matched_dict[name]) 
-
-

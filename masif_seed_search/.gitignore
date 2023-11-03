@@ -1,4 +1,6 @@
 *.pyc
 data_preparation/*
 *.out
-
+data/masif_targets/data_preparation
+data/masif_targets_/descriptors
+data/masif_targets/output

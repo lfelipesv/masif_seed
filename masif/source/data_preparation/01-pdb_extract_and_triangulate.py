@@ -37,7 +37,7 @@ chain_ids1 = in_fields[1]
 if (len(sys.argv)>2) and (sys.argv[2]=='masif_ligand'):
     pdb_filename = os.path.join(masif_opts["ligand"]["assembly_dir"],pdb_id+".pdb")
 else:
-    pdb_filename = masif_opts['raw_pdb_dir']+pdb_id+".pdb"
+    pdb_filename = masif_opts['raw_pdb_dir'] + pdb_id + ".pdb"
 tmp_dir= masif_opts['tmp_dir']
 protonated_file = tmp_dir+"/"+pdb_id+".pdb"
 protonate(pdb_filename, protonated_file)
