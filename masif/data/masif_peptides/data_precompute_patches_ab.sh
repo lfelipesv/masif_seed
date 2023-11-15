@@ -17,8 +17,8 @@ while read p; do
     PDBID=$(echo $FIELD1| cut -d"_" -f1)
     CHAIN1=$(echo $FIELD1| cut -d"_" -f2)
     ./data_precompute_patches_one.sh $PDBID\_$CHAIN1 &
-    if [ $(( i % N )) == 0 ]; then
+    if [ $(( i % N )) -eq 0 ]; then
         wait
     fi
     i=$((i+1))
-done < lists/sabdab_A_list_test.txt
+done < lists/ab_list_synthetic_5000.txt
