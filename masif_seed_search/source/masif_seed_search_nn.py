@@ -109,6 +109,18 @@ else:
     site_ixs = [ix for ix,vix in enumerate(target_vertices)]
     site_vixs = target_vertices
 
+# create folder to combine all designs that pass the filter
+designs_outdir = os.path.join(outdir, 'designs')
+if not os.path.exists(designs_outdir):
+    os.makedirs(designs_outdir)
+# create pdbs and scores folder inside designs folder
+pdbs_outdir = os.path.join(designs_outdir, 'pdbs')
+if not os.path.exists(pdbs_outdir):
+    os.makedirs(pdbs_outdir)
+scores_outdir = os.path.join(designs_outdir, 'scores')
+if not os.path.exists(scores_outdir):
+    os.makedirs(scores_outdir)
+
 out_log = open('log.txt', 'w+')
 # Go through every selected site 
 for site_ix, site_vix in zip(site_ixs,site_vixs):
@@ -146,6 +158,8 @@ for site_ix, site_vix in zip(site_ixs,site_vixs):
         # else:
         #     print(ix)
         # print(name)
+        # use site_ix and ix to create unique integer id for each design
+        design_id = site_ix * len(matched_dict.keys()) + ix
         align_protein(name, \
                     target_patch, \
                     target_patch_descs, \
@@ -156,8 +170,11 @@ for site_ix, site_vix in zip(site_ixs,site_vixs):
                     matched_dict,\
                     nn_score_atomic, \
                     site_outdir, \
-                    params
+                    params, \
+                    design_id, \
+                    pdbs_outdir, \
+                    scores_outdir
                     )
         if (ix+1) %1000 == 0:
-            print('So far, MaSIF ahs aligned {} fragments from {} proteins.'.format(count_matched_fragments,ix+1))
+            print('So far, MaSIF has aligned {} fragments from {} proteins.'.format(count_matched_fragments,ix+1))
         count_matched_fragments+= len(matched_dict[name]) 

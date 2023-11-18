@@ -441,9 +441,8 @@ def multidock(source_pcd, source_patch_coords, source_descs,
     return all_results, all_source_patch, all_source_desc, all_source_idx 
 
 
-def align_and_save(out_filename_base, patch, source_structure, 
-                   point_importance, 
-                   ):
+def align_and_save(out_filename_base, out_filename_pdb, patch, source_structure, 
+                   point_importance):
     
     io = PDBIO()
     # Remove hydrogens.
@@ -453,6 +452,7 @@ def align_and_save(out_filename_base, patch, source_structure,
             parent.detach_child(atom.get_id())
     io.set_structure(source_structure)
     io.save(out_filename_base+'.pdb')
+    io.save(out_filename_pdb+'.pdb')
     # Save patch - not necessary for benchmarking purposes. Uncomment if wanted.
     mesh = Simple_mesh(np.asarray(patch.points))
     mesh.set_attribute('vertex_charge', point_importance)
@@ -516,7 +516,10 @@ def align_protein(name, \
         matched_dict, \
         nn_score, \
         site_outdir, \
-        params):
+        params, \
+        design_id, \
+        pdbs_outdir, \
+        scores_outdir):
     ppi_pair_id = name[0]
     pid = name[1]
     pdb = ppi_pair_id.split('_')[0]
@@ -606,12 +609,13 @@ def align_protein(name, \
 
             source_structure_cp = copy.deepcopy(source_struct)
             
-            print('5')
+            print('Passed score filtering... Counting clashes...')
+            # print('5')
             # Count clashes and if threshold passes, align the pdb.
             clashing_ca, clashing_total = count_clashes(res.transformation, np.asarray(all_source_patch[j].points), source_structure_cp, \
                 target_ca_pcd_tree, target_pcd_tree, clashing_ca_thresh=params['allowed_CA_clashes'], clashing_thresh=params['allowed_heavy_atom_clashes'])
 
-            print('6')
+            # print('6')
             # print(clashing_ca)
             # print('asd')
             # print(clashing_total)
@@ -619,11 +623,13 @@ def align_protein(name, \
             if clashing_ca <= params['allowed_CA_clashes'] and clashing_total <= params['allowed_heavy_atom_clashes']:
             # if True:
 
-                # print('7')
+                print('Passed clashes filtering...')
                 # Align and save the pdb + patch 
                 out_fn = source_outdir+'/{}_{}_{}'.format(pdb, chain, j)
-                align_and_save(out_fn, all_source_patch[j], source_structure_cp, \
-                                            point_importance=all_point_importance[j])
+                out_fn_pdb = pdbs_outdir+'/{}_{}_{}_{}'.format(pdb, chain, j, design_id)
+                out_fn_score = scores_outdir+'/{}_{}_{}_{}'.format(pdb, chain, j, design_id)
+                align_and_save(out_fn, out_fn_pdb, all_source_patch[j], source_structure_cp, \
+                                point_importance=all_point_importance[j])
 
                 # Recompute the score with clashes.
                 print('Selected fragment: {} fragment_id: {} score: {:.4f} desc_dist_score: {:.4f} clashes(CA): {} clashes(total):{}\n'.format(j , ppi_pair_id, scores[j][0], scores[j][1], clashing_ca, clashing_total))
@@ -631,6 +637,12 @@ def align_protein(name, \
                 # Output the score for convenience. 
                 out_score = open(out_fn+'.score', 'w+')
                 out_score.write('name: {}, point id: {}, score: {:.4f}, clashing_ca: {}, clashing_heavy: {}, desc_dist_score: {}\n'.format(ppi_pair_id, j, scores[j][0], clashing_ca,clashing_total, scores[j][1]))
+                out_score.close()
+
+                # Save score for convenience in readable csv file
+                out_score = open(out_fn_score+'.csv', 'w+')
+                out_score.write('name,point_id,score,clashing_ca,clashing_heavy,desc_dist_score\n')
+                out_score.write('{},{},{:.4f},{},{},{}\n'.format(ppi_pair_id, j, scores[j][0], clashing_ca,clashing_total, scores[j][1]))
                 out_score.close()
                 
                 print ('Surface alignment is deactivated - aligning only pdbs. ')
