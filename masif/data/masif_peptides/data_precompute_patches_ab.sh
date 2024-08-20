@@ -21,4 +21,4 @@ while read p; do
         wait
     fi
     i=$((i+1))
-done < lists/ab_list_synthetic_5000.txt
+done < lists/sabdab_A_list_final.txt

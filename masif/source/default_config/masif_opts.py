@@ -2,12 +2,12 @@ import tempfile
 
 masif_opts = {}
 # Default directories
-masif_opts["raw_pdb_dir"] = "data_preparation/00-raw_pdbs_2/"
-masif_opts["pdb_chain_dir"] = "data_preparation/01-benchmark_pdbs_2/"
-masif_opts["ply_chain_dir"] = "data_preparation/01-benchmark_surfaces_2/"
-# masif_opts["raw_pdb_dir"] = "data_preparation/00-raw_pdbs/"
-# masif_opts["pdb_chain_dir"] = "data_preparation/01-benchmark_pdbs/"
-# masif_opts["ply_chain_dir"] = "data_preparation/01-benchmark_surfaces/"
+# masif_opts["raw_pdb_dir"] = "data_preparation/00-raw_pdbs_2/"
+# masif_opts["pdb_chain_dir"] = "data_preparation/01-benchmark_pdbs_2/"
+# masif_opts["ply_chain_dir"] = "data_preparation/01-benchmark_surfaces_2/"
+masif_opts["raw_pdb_dir"] = "data_preparation/00-raw_pdbs/"
+masif_opts["pdb_chain_dir"] = "data_preparation/01-benchmark_pdbs/"
+masif_opts["ply_chain_dir"] = "data_preparation/01-benchmark_surfaces/"
 masif_opts["tmp_dir"] = tempfile.gettempdir()
 masif_opts["ply_file_template"] = masif_opts["ply_chain_dir"] + "/{}_{}.ply"
 
@@ -30,12 +30,12 @@ masif_opts["ppi_search"]["training_list"] = "lists/training.txt"
 masif_opts["ppi_search"]["testing_list"] = "lists/testing.txt"
 masif_opts["ppi_search"]["max_shape_size"] = 200
 masif_opts["ppi_search"]["max_distance"] = 12.0  # Radius for the neural network.
-masif_opts["ppi_search"][
-    "masif_precomputation_dir"
-] = "data_preparation/04b-precomputation_12A/precomputation/"
 # masif_opts["ppi_search"][
 #     "masif_precomputation_dir"
-# ] = "/media/lfelipesv/8c81efa7-bee3-4d36-9d6a-efb4f106c8d4/home/felipe/masif_data_preparation_2/04b-precomputation_12A/precomputation/"
+# ] = "data_preparation/04b-precomputation_12A/precomputation/"
+masif_opts["ppi_search"][
+    "masif_precomputation_dir"
+] = "/media/lfelipesv/8c81efa7-bee3-4d36-9d6a-efb4f106c8d41/home/felipe/masif_data_preparation_2/04b-precomputation_12A/precomputation/"
 masif_opts["ppi_search"]["feat_mask"] = [1.0] * 5
 masif_opts["ppi_search"]["max_sc_filt"] = 1.0
 masif_opts["ppi_search"]["min_sc_filt"] = 0.5
@@ -58,12 +58,12 @@ masif_opts["site"]["testing_list"] = "lists/testing.txt"
 masif_opts["site"]["max_shape_size"] = 100
 masif_opts["site"]["n_conv_layers"] = 3
 masif_opts["site"]["max_distance"] = 9.0  # Radius for the neural network.
-masif_opts["site"][
-    "masif_precomputation_dir"
-] = "data_preparation/04a-precomputation_9A/precomputation/"
 # masif_opts["site"][
 #     "masif_precomputation_dir"
-# ] = "/media/lfelipesv/8c81efa7-bee3-4d36-9d6a-efb4f106c8d4/home/felipe/masif_data_preparation_2/04a-precomputation_9A/precomputation/"
+# ] = "data_preparation/04a-precomputation_9A/precomputation/"
+masif_opts["site"][
+    "masif_precomputation_dir"
+] = "/media/lfelipesv/8c81efa7-bee3-4d36-9d6a-efb4f106c8d41/home/felipe/masif_data_preparation_2/04a-precomputation_9A/precomputation/"
 masif_opts["site"]["range_val_samples"] = 0.9  # 0.9 to 1.0
 masif_opts["site"]["model_dir"] = "nn_models/all_feat_3l/model_data/"
 masif_opts["site"]["out_pred_dir"] = "output/all_feat_3l/pred_data/"
@@ -79,7 +79,7 @@ masif_opts["ligand"]["ligand_coords_dir"] = "data_preparation/00c-ligand_coords"
 # ] = "data_preparation/04a-precomputation_12A/precomputation/"
 masif_opts["ligand"][
     "masif_precomputation_dir"
-] = "/media/lfelipesv/8c81efa7-bee3-4d36-9d6a-efb4f106c8d4/home/felipe/masif_data_preparation_2/04a-precomputation_12A/precomputation/"
+] = "/media/lfelipesv/8c81efa7-bee3-4d36-9d6a-efb4f106c8d41/home/felipe/masif_data_preparation_2/04a-precomputation_12A/precomputation/"
 masif_opts["ligand"]["max_shape_size"] = 200
 masif_opts["ligand"]["feat_mask"] = [1.0] * 5
 masif_opts["ligand"]["train_fract"] = 0.9 * 0.8

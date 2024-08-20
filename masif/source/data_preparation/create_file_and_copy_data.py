@@ -31,7 +31,8 @@ pdb_id = in_fields[0]
 filename = sys.argv[1]
 # path = sys.argv[2]
 # path = '/home/lfelipesv/Desktop/Felipe/Projects/protein/target-conditioned-design/masif_seed/synthetic_cdrs_renamed/'
-path = '/home/lfelipesv/Desktop/Felipe/Projects/protein/target-conditioned-design/masif_seed/tmp_structures/'
+# path = '/home/lfelipesv/Desktop/Felipe/Projects/protein/target-conditioned-design/masif_seed/synthetic_renamed/'
+path = '/home/lfelipesv/Desktop/Felipe/Projects/protein/target-conditioned-design/masif_seed/masif/data/masif_peptides/ab_A_sabdab/'
 
 print(path + filename + '.pdb')
 

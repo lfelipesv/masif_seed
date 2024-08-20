@@ -35,7 +35,8 @@ synthetic_path = '/home/lfelipesv/Desktop/Felipe/Projects/protein/external/synth
 complexes_path = os.path.join(design_path, 'complexes')
 
 # Create output directory if does not exists
-new_path = '/home/lfelipesv/Desktop/Felipe/Projects/protein/target-conditioned-design/search-results/gfd2_C'
+new_path = os.path.join('/home/lfelipesv/Desktop/Felipe/Projects/protein/target-conditioned-design/search-results/', target_name)
+# new_path = '/home/lfelipesv/Desktop/Felipe/Projects/protein/target-conditioned-design/search-results/gfd2_C'
 outdir = os.path.join(new_path, 'filtered_complexes')
 if not os.path.exists(outdir):
     os.makedirs(outdir, exist_ok=True)
@@ -62,46 +63,59 @@ for pdb_file in os.listdir(complexes_path):
         pdb_filepath = os.path.join(complexes_path, pdb_file)
         structure = Bio.PDB.PDBParser().get_structure(pdb_file, pdb_filepath)
         model = structure[0]
+        # check chains in model
+        chains = [chain.id for chain in model]
+        print(pdb_file)
+        print(chains)
         heavy_dist_matrix = calc_dist_matrix(model[heavy_chain], model[target_chain])
-        heavy_contact_map = heavy_dist_matrix < 12.0
+        heavy_contact_map = heavy_dist_matrix < 8.0
         light_dist_matrix = calc_dist_matrix(model[light_chain], model[target_chain])
-        light_contact_map = light_dist_matrix < 12.0
+        light_contact_map = light_dist_matrix < 8.0
         # find CDR regions in heavy and light chains
         heavy_cdr_regions = []
         light_cdr_regions = []
         # renumber from IMGT to Chothia scheme and save in tmp.pdb
-        out_data_path = 'tmp.pdb'
-        cmd = f'python ImmunoPDB.py -i {pdb_filepath} -o {out_data_path}'
-        exit_code = os.system(cmd)
-        if exit_code != 0:
-            print(f'renumbering failed for {pdb_filepath}. scheme Chothia')
-            break
-        # extract CDR regions from tmp.pdb
-        parser = Bio.PDB.PDBParser(QUIET=True)
-        structure = parser.get_structure("tmp", out_data_path)
-        heavy_chain_cdrs = {name: (int(start), int(end)) for name, start, end in cdr_regions['heavy']}
-        light_chain_cdrs = {name: (int(start), int(end)) for name, start, end in cdr_regions['light']}
-        heavy_cdrs_mask = np.zeros(len(structure[0][heavy_chain]), dtype=bool)
-        light_cdrs_mask = np.zeros(len(structure[0][light_chain]), dtype=bool)
-        # fill mask with True values for CDR regions
-        # notice that there is a mismatch between Chothia numbers and id's in the mask
-        for chain in structure[0]:
-            id_ = 0
-            for residue in chain:
-                if chain.id == heavy_chain:
-                    for name, (start, end) in heavy_chain_cdrs.items():
-                        if residue.id[1] in range(start, end + 1):
-                            heavy_cdrs_mask[id_] = True
-                elif chain.id == light_chain:
-                    for name, (start, end) in light_chain_cdrs.items():
-                        if residue.id[1] in range(start, end + 1):
-                            light_cdrs_mask[id_] = True
-                id_ += 1
-        # check if there is any contact between CDR regions and target chain
-        if np.any(heavy_contact_map[heavy_cdrs_mask, :]) and np.any(light_contact_map[light_cdrs_mask, :]):
-            print(f'CDR regions of {pdb_file} are in contact with target chain')
-            out_path = os.path.join(outdir, pdb_file)
-            os.system(f'cp {pdb_filepath} {out_path}')
+        try:
+            out_data_path = 'tmp.pdb'
+            cmd = f'python ImmunoPDB.py -i {pdb_filepath} -o {out_data_path}'
+            exit_code = os.system(cmd)
+            if exit_code != 0:
+                print(f'renumbering failed for {pdb_filepath}. scheme Chothia')
+                # break
+            # extract CDR regions from tmp.pdb
+            parser = Bio.PDB.PDBParser(QUIET=True)
+            structure = parser.get_structure("tmp", out_data_path)
+            heavy_chain_cdrs = {name: (int(start), int(end)) for name, start, end in cdr_regions['heavy']}
+            light_chain_cdrs = {name: (int(start), int(end)) for name, start, end in cdr_regions['light']}
+            heavy_cdrs_mask = np.zeros(len(structure[0][heavy_chain]), dtype=bool)
+            light_cdrs_mask = np.zeros(len(structure[0][light_chain]), dtype=bool)
+            # fill mask with True values for CDR regions
+            # notice that there is a mismatch between Chothia numbers and id's in the mask
+            for chain in structure[0]:
+                id_ = 0
+                for residue in chain:
+                    # check if there are CDR-H3 interaction
+                    # if chain.id == heavy_chain:
+                    #     if residue.id[1] in range(95, 102 + 1):
+                    #         heavy_cdrs_mask[id_] = True
+                    if chain.id == heavy_chain:
+                        for name, (start, end) in heavy_chain_cdrs.items():
+                            if residue.id[1] in range(start, end + 1):
+                                heavy_cdrs_mask[id_] = True
+                    elif chain.id == light_chain:
+                        for name, (start, end) in light_chain_cdrs.items():
+                            if residue.id[1] in range(start, end + 1):
+                                light_cdrs_mask[id_] = True
+                    id_ += 1
+            # check if there is any contact between CDR regions and target chain
+            # if np.any(heavy_contact_map[heavy_cdrs_mask, :]) and np.any(light_contact_map[light_cdrs_mask, :]):
+            if np.any(heavy_contact_map[heavy_cdrs_mask, :]):
+            # if True:
+                print(f'CDR regions of {pdb_file} are in contact with target chain')
+                out_path = os.path.join(outdir, pdb_file)
+                os.system(f'cp {pdb_filepath} {out_path}')
+        except:
+            print(f'jumping this pdb: {pdb_filepath}')
     i += 1
 
 # In part 2 loop through filtered designs and combine their csv files

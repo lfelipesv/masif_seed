@@ -4,7 +4,7 @@ masif_source=$masif_root/masif/source/
 masif_seed_source=$masif_root/masif_seed_search/source/
 export PYTHONPATH=$masif_source
 export masif_matlab
-if [ "$1" == "--file" ]
+if [ "$1" -eq "--file" ]
 then
 	echo "Running masif site on $2"
 	PPI_PAIR_ID=$3

@@ -1,10 +1,13 @@
 *.pyc
 data/**/00-raw_pdbs/
 data/**/00-raw_pdbs_2/
+data/**/00-raw_pdbs_3/
 data/**/01-benchmark_surfaces/
 data/**/01-benchmark_surfaces_2/
+data/**/01-benchmark_surfaces_3/
 data/**/01-benchmark_pdbs/
 data/**/01-benchmark_pdbs_2/
+data/**/01-benchmark_pdbs_3/
 data/**/02-matfile/
 data/**/02-matfile/
 data/**/03-coords/
@@ -28,3 +31,5 @@ tensorflow_on_gpu/
 output/
 descriptors/
 descriptors_2/
+descriptors_3/
+data/masif_peptides/ab_A_sabdab/

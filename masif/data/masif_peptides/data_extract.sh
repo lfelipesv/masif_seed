@@ -22,4 +22,4 @@ while read p; do
     fi
     i=$((i+1))
     echo $i
-done < lists/ab_list_synthetic_5000.txt
+done < lists/sabdab_A_list.txt
