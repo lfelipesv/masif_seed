@@ -61,6 +61,11 @@ RUN pip3 install matplotlib
 RUN pip3 install ipython Biopython scikit-learn tensorflow==1.12 networkx open3d==0.8.0.0 dask==1.2.2 packaging
 #RUN pip install StrBioInfo 
 
+# Install ANARCI and Abnumber
+RUN apt install -y hmmer
+RUN pip3 install git+https://github.com/oxpig/ANARCI.git@19d9de50b2ab7ca80f4d2c45fd113139f4cad311
+RUN pip3 install git+https://github.com/prihoda/abnumber
+
 # Clone masif
 WORKDIR /
 
